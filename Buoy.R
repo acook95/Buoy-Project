@@ -114,4 +114,4 @@ fit2
 
 ##group_by() and summarize() mean of each group together in dplyr package
 
-
+#Good idea!
