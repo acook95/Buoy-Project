@@ -1,6 +1,7 @@
 library(tidyverse)
 
 library(stringr)
+library(rstanarm)
 
 
 
@@ -99,7 +100,7 @@ MR4 <- transform(MR3, YYYY= as.numeric(YYYY), MM= as.numeric(MM), ATMP= as.numer
 #MR5 <- unite(MR4, DATE, YYYY, MM, sep = "-")
 MR5 <- mutate(MR4, DATE = 12 * (YYYY-2000) + MM)
 
-ggplot(data=MR5, aes(DATE, ATMP)) + geom_point()
+ggplot(data=MR5, aes(DATE, ATMP)) + geom_point() + geom_line()
 
 fit <- stan_glm(ATMP ~ DATE, data = MR5, refresh=0)
 fit
@@ -111,6 +112,6 @@ ggplot(data=MR8, aes(YYYY,ATMP)) + geom_point()
 fit2 <- stan_glm(ATMP ~ YYYY, data=MR8, refresh=0)
 fit2
 
+##group_by() and summarize() mean of each group together in dplyr package
 
-# hi this is jenna
-#And Bruce
+
