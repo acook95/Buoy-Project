@@ -1,47 +1,21 @@
 library(tidyverse)
-
 library(stringr)
 library(rstanarm)
 
-
-
-
-
 ### make URLs
 
-
-
 url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
-
 url2 <- ".txt.gz&dir=data/historical/stdmet/"
 
-
-
 years <- c(2000:2018)
-
-
+#note: we've ducked the issue of two digit years by starting with 2000
 
 urls <- str_c(url1, years, url2, sep = "")
-
-
-
 filenames <- str_c("mr", years, sep = "")
-
-
 
 ###  Read the data from the website
 
-#file2 <- data.frame(file$YYYY,file$ATMP)
-#colnames(file2)[1] <- "YYYY"
-#colnames(file2)[2] <- "ATMP"
-#file3 <- data.frame(MR$YYYY,MR$ATMP)
-#colnames(file3)[1] <- "YYYY"
-#colnames(file3)[2] <- "ATMP"
-#file4 <- rbind.data.frame(file2,file3)
-
-
 N <- length(urls)
-
 
 
 for (i in 1:N){
@@ -54,64 +28,74 @@ for (i in 1:N){
   
   file <- get(filenames[i])
   
+  #This is necessary because some because some years (eg 2007) label their year 
+  #column as "YY"
   colnames(file)[1] <-"YYYY"
   
-  file2 <- select(file, YYYY, MM, DD, hh, ATMP)
-  # put '19' in front of 2 digit years
-  
-  # check that all columns are included
-  
-  # filter down to only the 1 daily observation that you want
-  
-  # etc etc etc
-  
-  
+  #For each year, grab only the YYYY, MM, and temp columns, and only keep the 
+  #data for the month of August. Also remove large NA values in ATMP.
+  file %<>%
+    select(YYYY, MM, ATMP) %>% 
+    filter(MM=="02", ATMP<70)
   
   
   
   if(i == 1){
-    
-    MR <- file2
-    
+    MR <- file
   }
-  
-  
-  
   else{
     
-    MR <- rbind.data.frame(MR, file2)
-    
+    MR <- rbind.data.frame(MR, file)
   }
-  
-  
-  
-  
-  
-  
-  
 }
 
-MR2 <- filter(MR, DD==11, hh==12, ATMP<500)
+MR2 <- transform(MR, YYYY=as.numeric(YYYY), ATMP= as.numeric(ATMP))
 
-MR3 <- select(MR2, YYYY, MM, ATMP)
+#ugh - why didn't the following piping work:
+#MR %<>% transform(ATMP=as.numeric(ATMP))
 
-MR4 <- transform(MR3, YYYY= as.numeric(YYYY), MM= as.numeric(MM), ATMP= as.numeric(ATMP))
+
+
+MR3 <- MR2 %>%
+  group_by(YYYY) %>% 
+  summarize(mean(ATMP))
+
+colnames(MR3)[2]<-"AvgTMP"
+
+ggplot(MR3, aes(YYYY, AvgTMP)) + geom_point()
+
+yhat<-lm(MR3$AvgTMP~MR3$YYYY)
+yhat
+##any particular reason for using lm instead of stan_glm here?
+
+plot(MR3)
+abline(yhat, col="red")
+
+
+##MR2 <- filter(MR, DD==11, hh==12, ATMP<500)
+
+##MR3 <- select(MR2, YYYY, MM, ATMP)
+
+##MR4 <- transform(MR3, YYYY= as.numeric(YYYY), MM= as.numeric(MM), ATMP= as.numeric(ATMP))
 
 #MR5 <- unite(MR4, DATE, YYYY, MM, sep = "-")
-MR5 <- mutate(MR4, DATE = 12 * (YYYY-2000) + MM)
+##MR5 <- mutate(MR4, DATE = 12 * (YYYY-2000) + MM)
 
-ggplot(data=MR5, aes(DATE, ATMP)) + geom_point() + geom_line()
+##ggplot(data=MR5, aes(DATE, ATMP)) + geom_point() + geom_line()
 
-fit <- stan_glm(ATMP ~ DATE, data = MR5, refresh=0)
-fit
+##fit <- stan_glm(ATMP ~ DATE, data = MR5, refresh=0)
+##fit
 
-MR7 <- filter(MR, MM==11, DD==11, hh==12, ATMP<500)
-MR8 <- transform(MR7, YYYY= as.numeric(YYYY), ATMP= as.numeric(ATMP))
+##MR7 <- filter(MR, MM==11, DD==11, hh==12, ATMP<500)
+##MR8 <- transform(MR7, YYYY= as.numeric(YYYY), ATMP= as.numeric(ATMP))
 
-ggplot(data=MR8, aes(YYYY,ATMP)) + geom_point()
-fit2 <- stan_glm(ATMP ~ YYYY, data=MR8, refresh=0)
-fit2
+##ggplot(data=MR8, aes(YYYY,ATMP)) + geom_point()
+##fit2 <- stan_glm(ATMP ~ YYYY, data=MR8, refresh=0)
+##fit2
 
 ##group_by() and summarize() mean of each group together in dplyr package
 
 #Good idea!
+
+
+##file2 <- select(file, YYYY, MM, DD, hh, ATMP)
