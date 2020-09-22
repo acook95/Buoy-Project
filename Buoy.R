@@ -1,6 +1,7 @@
 library(tidyverse)
 library(stringr)
 library(rstanarm)
+library(lubridate)
 
 ## Make URLs
 
@@ -9,7 +10,7 @@ url2 <- ".txt.gz&dir=data/historical/stdmet/"
 
 ## Specify the range of years and what months we want
 years <- c(2000:2018)
-months <- c(01:01)
+months <- c(01:12)
 
 ## We have avoided the issue of two digit years by starting with 2000
 urls <- str_c(url1, years, url2, sep = "")
@@ -70,3 +71,15 @@ abline(yhat, col="red")
 ### More helpful information
 # In April and August 2018, there was no recorded data due to lack of funding.
 
+
+# Using Lubridate to rename year column
+
+data_1997 <- read.table("https://www.ndbc.noaa.gov/view_text_file.php?filename=44013h1997.txt.gz&dir=data/historical/stdmet/", header=T)
+data_1997 <- as_tibble(data_1997)
+
+# Use mutate to create a new column with a 4 digit year
+data_1997 <- mutate(data_1997, YYYY = data_1997$YY + 1900)
+
+# Use mutate and unite to create a new column with a 4 digit year
+data_1997a <- mutate(data_1997, CC = 19)
+data_1997a <- data_1997a %>% unite("YEAR", CC,YY, sep = "")
