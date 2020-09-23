@@ -13,3 +13,6 @@ Put this all into RMarkdown.
 
 Put in a LaTex label to show that we know how to do such a thing.
 
+IF we had more time: We could build one file that had all years and all months,
+and then put those (18*12) months along the x and AvgTEMP on y and we'd see a 
+sinusoidal graph with an upward slope.
