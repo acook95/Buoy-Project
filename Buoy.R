@@ -2,6 +2,7 @@ library(tidyverse)
 library(stringr)
 library(rstanarm)
 library(lubridate)
+library(gridExtra)
 
 ## Make URLs
 
@@ -16,6 +17,7 @@ months <- c(01:12)
 urls <- str_c(url1, years, url2, sep = "")
 filenames <- str_c("mr", years, sep = "")
 month_files <- str_c("Month", months, sep = "")
+plot_files <- str_c("Plot", months, sep = "")
 
 ## Read the data from the website
 N <- length(urls)
@@ -58,18 +60,22 @@ for (j in 1:M){
 }
 
 ## Plotting ...
-ggplot(MR3, aes(YYYY, AvgTMP)) + geom_point()
-
-yhat<-lm(MR3$AvgTMP~MR3$YYYY)
-yhat
-##any particular reason for using lm instead of stan_glm here?
-
-plot(MR3)
-abline(yhat, col="red")
+for (k in 1:M){
+  file <- get(month_files[k])
+  fit <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
+  assign(plot_files[k], ggplot(file, aes(YYYY, AvgTMP)) + 
+           geom_point() + 
+           geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
+           labs(x = "Year", y = "Average Temp", title = month.abb[k]) + 
+           xlim(2000, 2018) + 
+           ylim(min(file$AvgTMP), (min(file$AvgTMP) + 15)))
+}
+grid.arrange(Plot1, Plot2, Plot3, Plot4, Plot5, Plot6, Plot7, Plot8, Plot9, Plot10, Plot11, Plot12, nrow=4, ncol=3, newpage = TRUE)
 
 
 ### More helpful information
 # In April and August 2018, there was no recorded data due to lack of funding.
+
 
 
 # Using Lubridate to rename year column
