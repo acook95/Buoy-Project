@@ -12,12 +12,13 @@ url2 <- ".txt.gz&dir=data/historical/stdmet/"
 ## Specify the range of years and what months we want
 years <- c(2000:2018)
 months <- c(01:12)
+months <-str_pad(months, 2, pad="0")
 
 ## We have avoided the issue of two digit years by starting with 2000
 urls <- str_c(url1, years, url2, sep = "")
 filenames <- str_c("mr", years, sep = "")
-month_files <- str_c("Month", months, sep = "")
-plot_files <- str_c("Plot", months, sep = "")
+month_files <- str_c("M", months, sep = "")
+plot_files <- str_c("P", months, sep = "")
 
 ## Read the data from the website
 N <- length(urls)
@@ -63,16 +64,16 @@ for (j in 1:M){
 for (k in 1:12){
   file <- get(month_files[k])
   fit <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
-  print(month_files[k])
-  print(max(file$AvgTMP)-min(file$AvgTMP))
   assign(plot_files[k], ggplot(file, aes(YYYY, AvgTMP)) + 
            geom_point() + 
            geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
            labs(x = "Year", y = "Average Temp", title = month.abb[k]) + 
            xlim(2000, 2018) + 
-           ylim(min(file$AvgTMP), min(file$AvgTMP) + 8))
+           ylim(15, 30))
 }
-grid.arrange(Plot1, Plot2, Plot3, Plot4, Plot5, Plot6, Plot7, Plot8, Plot9, Plot10, Plot11, Plot12, nrow=4, ncol=3, newpage = TRUE)
+
+grid.arrange(P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12, nrow=6, ncol=2, newpage = TRUE)
+#We tried - but failed in our attempt to condense the P01:P12 within grid.arrange :-(
 
 
 ### More helpful information

@@ -1,7 +1,5 @@
 ToDo:
 
-Why is the average temp in Dec 2010 SO low??
-
 Move the YY to YYYY code up so that we can deal with 1988:2018 (eg)
 
 Display the regression slope and t-score for each month.
