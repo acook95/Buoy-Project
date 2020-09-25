@@ -123,3 +123,11 @@ data_1997 <- mutate(data_1997, YYYY = data_1997$YY + 1900)
 # Use mutate and unite to create a new column with a 4 digit year
 data_1997a <- mutate(data_1997, CC = 19)
 data_1997a <- data_1997a %>% unite("YEAR", CC,YY, sep = "")
+
+# References
+citation(package = "tidyverse")
+citation(package = "stringr")
+citation(package = "rstanarm")
+citation(package = "lubridate")
+citation(package = "gridExtra")
+citation(package = "kableExtra")
