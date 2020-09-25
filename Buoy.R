@@ -73,7 +73,7 @@ for (j in 1:M){
   month <- month %>% mutate(Day=c(1)) %>% 
     mutate(Date=make_date(year=YYYY, month=MM, day=Day))
   
-  ##bind together the "month" files to create a new data frame ("M_all") which i
+  ## Bind together the "month" files to create a new data frame ("M_all") which i
 
   if(j == 1){
     M_all <- month
@@ -83,18 +83,18 @@ for (j in 1:M){
   }
 }
 
-#fit a regression model for the combined data frame M_all
+# Fit a regression model for the combined data frame M_all
 fit_all <- stan_glm(AvgTMP ~ Date, data = M_all, refresh=0)
 print(coef(fit)[2], digits = 6) #look at slope of regression line
 
-#plot the data and fitted regression line
+# Plot the data and fitted regression line
 ggplot(M_all, aes(Date, AvgTMP)) + 
   geom_line() +
   geom_abline(intercept = coef(fit_all)[1], slope = coef(fit_all)[2], color = "blue") +
   geom_hline(aes(yintercept=mean(AvgTMP)), linetype="dotted")
 
-#Over the course of our sample, the regression line is showing an increase in average
-#temperature of 0.68 degrees.
+# Over the course of our sample, the regression line is showing an increase in average
+# temperature of 0.68 degrees.
 coef(fit_all)[2]*max(as.numeric(M_all$Date)) - coef(fit_all)[2]*min(as.numeric(M_all$Date))
 
 ## Running separate regressions for each month
@@ -104,7 +104,7 @@ for (k in 1:12){
   assign(slope_files[k], as_tibble(round(coef(fit_month)[2], digits = 3))) #gather slopes for each month
   slopes <- get(slope_files[k])
   
-  #combine slopes into a table
+  # Combine slopes into a table
   if(k==1){
     df <- slopes
   }
@@ -112,7 +112,7 @@ for (k in 1:12){
     df <- rbind.data.frame(df, slopes)
   }
   
-  #create plots for each separate regression
+  # Create plots for each separate regression
   assign(plot_files[k], ggplot(file, aes(YYYY, AvgTMP)) + 
            geom_point() + 
            geom_abline(intercept = coef(fit_month)[1], slope = coef(fit_month)[2], color = "blue") +
@@ -122,11 +122,11 @@ for (k in 1:12){
 
 }
 
-#arrage plots from above into a single figure
+# Arrage plots from above into a single figure
 grid.arrange(P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12, nrow=3, ncol=4, newpage = TRUE)
-#We tried - but failed in our attempt to condense the P01:P12 within grid.arrange :-(
+# We tried - but failed in our attempt to condense the P01:P12 within grid.arrange :-(
 
-#manipulate table of slopes so that it is more readable in the report
+# Manipulate table of slopes so that it is more readable in the report
 df <- mutate(df, Month = month.abb[1:12])
 colnames(df)[1] <- "Slope"
 df <- relocate(df, Month)
@@ -134,7 +134,7 @@ df <- t(df)
 rownames(df) <- c("Month", "Slope")
 kable(df)
 
-#calculate the average slope to determine whether it is positive or negative 
+# Calculate the average slope to determine whether it is positive or negative 
 mean(df$Slope)
 
 # References

@@ -180,9 +180,7 @@ There were a few techniques that we strived to achieve but did not work in our t
 
 In addition to these ideas with time constraints, we had ideas about the layout of the report. We wanted to have a whole page dedicated to the twelve plots and the table but when we used /newpage, although it worked, there was a lot of blank space on the page before. So, we decided to split the figure of plots and the table to two separate pages. We also ran into a problem about having the figure and table on the same page as the table would always print on the next page. Again, with the time limit, we decided not to worry about it.
 
-
 \newpage
-
 ## References
 
 1. Baptiste Auguie (2017). gridExtra: Miscellaneous Functions for "Grid" Graphics. R package version 2.3. https://CRAN.R-project.org/package=gridExtra
