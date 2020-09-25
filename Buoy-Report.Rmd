@@ -7,6 +7,14 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(stringr)
+library(rstanarm)
+library(lubridate)
+library(gridExtra)
+library(kableExtra)
+library(knitr)
+library(png)
 ```
 ## Introduction
 
@@ -47,14 +55,7 @@ Finally, a loop was added to run a series of linear regressions to analyze the c
 
 By observing the coefficients of the predictor (year) for each fitted regression model, we were able to determine the general trend of the air temperature for each month over the course of 18 years. Plots of the data and regression lines for each month are shown in Figure 2. Slopes of each regression line are shown in Table 1. Overall, we observed a slight general rise in temperatures, with the average slope of the regression lines equal to 0.028. Only one month, March, showed a decrease in average temperatures over the course of our 18 year range. 
  
-\newpage
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=6, fig.width=6, fig.cap="Plots of the linear regression line for each month from 2000 to 2018."}
-library(tidyverse)
-library(stringr)
-library(rstanarm)
-library(lubridate)
-library(gridExtra)
-library(kableExtra)
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=6, fig.cap="Plot and regression line of average temperatures for each month from 2000 to 2018. The black solid line shows the variation in temperatures from month to month. The dashed line indicates overall average temperature. The blue solid line represents the regression equation. The linear regression line is positive, showing that there is a temperature increase. This temperature increase is 0.68 degrees Celsius."}
 
 url1 <- "http://www.ndbc.noaa.gov/view_text_file.php?filename=mlrf1h"
 url2 <- ".txt.gz&dir=data/historical/stdmet/"
@@ -96,13 +97,33 @@ for (j in 1:M){
     }
   }
 
-  month <- MR %>%
-  group_by(YYYY) %>% 
-  summarize(mean(ATMP))
+ month <- MR %>%
+    group_by(YYYY) %>% 
+    summarize(mean(ATMP), median(MM))
   colnames(month)[2]<-"AvgTMP"
+  colnames(month)[3] <- "MM"
   assign(month_files[j], month)
+  month <- month %>% mutate(Day=c(1)) %>% 
+    mutate(Date=make_date(year=YYYY, month=MM, day=Day))
+  
+  if(j == 1){
+    frame <- month
+  }
+  else{
+    frame <- rbind.data.frame(frame, month)
+  }
 }
 
+fit <- stan_glm(AvgTMP ~ Date, data = frame, refresh=0)
+cptn <- c(c("slope of regression line = ", round(coef(fit)[2],digits=3)))
+ggplot(frame, aes(Date, AvgTMP)) + 
+  geom_line() +
+  geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
+  geom_hline(aes(yintercept=mean(AvgTMP)), linetype="dotted")
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=6, fig.width=6, fig.cap="Plots of the linear regression line separated for each month from 2000 to 2018."}
 for (k in 1:12){
   file <- get(month_files[k])
   fit <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
@@ -126,7 +147,7 @@ for (k in 1:12){
 grid.arrange(P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12, nrow=4, ncol=3, newpage = TRUE)
 ```
 
-
+\newpage
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df <- mutate(df, Month = month.abb[1:12])
 colnames(df)[1] <- "Slope"
@@ -135,10 +156,9 @@ df <- t(df)
 df <- as_tibble(df)
 rownames(df) <- c("Month", "Slope")
 kable(df, col.names = NULL, caption = "Slopes of the regression lines for every month from 2000 to 2018.") %>% kable_styling(position = "center")
-
 ```
 
-\newpage
+
 ### Discussion
 
 The results stated above suggest a general rise in temperatures off the coast of Boston between 2000 and 2018. The average slope of the regression lines is small, but we believe that even a small rise in temperatures can have significant environmental impact. While it is tempting to claim that this positive linear trend is evidence of global warming, there are limitations to consider.  
@@ -165,9 +185,13 @@ Finally, we included a narrow range of years to analyze. Future analyses may see
 
 5. Hao Zhu (2020). kableExtra: Construct Complex Table with 'kable' and Pipe Syntax. R package version 1.2.1. https://CRAN.R-project.org/package=kableExtra
 
-6. US Department of Commerce, National Oceanic and Atmospheric Administration. “NDBC Station History Page.” NDBC, 8 Nov. 1996, www.ndbc.noaa.gov/station_history.php?station=44013. 
+6. Simon Urbanek (2013). png: Read and write PNG images. R package version 0.1-7. https://CRAN.R-project.org/package=png
 
-7. Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+7. US Department of Commerce, National Oceanic and Atmospheric Administration. “NDBC Station History Page.” NDBC, 8 Nov. 1996, www.ndbc.noaa.gov/station_history.php?station=44013. 
+
+8. Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+9. Yihui Xie (2020). knitr: A General-Purpose Package for Dynamic Report Generation in R. R package version 1.29.
 
 
 
