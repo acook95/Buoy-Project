@@ -56,11 +56,15 @@ for (j in 1:M){
   }
 
   month <- MR %>%
-  group_by(YYYY) %>% 
-  summarize(mean(ATMP), median(MM))
+    group_by(YYYY) %>% 
+    summarize(mean(ATMP), median(MM))
   colnames(month)[2]<-"AvgTMP"
   colnames(month)[3] <- "MM"
+  month <- month %>% mutate(Day=c(1)) %>% 
+    mutate(Date=make_date(year=YYYY, month=MM, day=Day))
+  
   assign(month_files[j], month)
+  
   
   if(j == 1){
     frame <- month
