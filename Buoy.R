@@ -3,6 +3,7 @@ library(stringr)
 library(rstanarm)
 library(lubridate)
 library(gridExtra)
+library(kableExtra)
 
 ## Make URLs
 
@@ -19,6 +20,7 @@ urls <- str_c(url1, years, url2, sep = "")
 filenames <- str_c("mr", years, sep = "")
 month_files <- str_c("M", months, sep = "")
 plot_files <- str_c("P", months, sep = "")
+slope_files <- str_c("S", months, sep = "")
 
 ## Read the data from the website
 N <- length(urls)
@@ -64,21 +66,42 @@ for (j in 1:M){
 for (k in 1:12){
   file <- get(month_files[k])
   fit <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
+  assign(slope_files[k], as_tibble(round(coef(fit)[2], digits = 3)))
+  slopes <- get(slope_files[k])
+  if(k==1){
+    df <- slopes
+  }
+  else{
+    df <- rbind.data.frame(df, slopes)
+  }
   assign(plot_files[k], ggplot(file, aes(YYYY, AvgTMP)) + 
            geom_point() + 
            geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
            labs(x = "Year", y = "Average Temp", title = month.abb[k]) + 
            xlim(2000, 2018) + 
            ylim(15, 30))
+
 }
 
-grid.arrange(P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12, nrow=6, ncol=2, newpage = TRUE)
+grid.arrange(P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12, nrow=3, ncol=4, newpage = TRUE)
 #We tried - but failed in our attempt to condense the P01:P12 within grid.arrange :-(
 
+df <- mutate(df, Month = month.abb[1:12])
+colnames(df)[1] <- "Slope"
+df <- relocate(df, Month)
+df <- t(df)
+df <- as_tibble(df)
+rownames(df) <- c("Month", "Slope")
+kable(df)
+
+mean(df$Slope)
 
 ### More helpful information
 # In April and August 2018, there was no recorded data due to lack of funding.
 
+for (p in 1:12){
+  print(coef(plot_files[p]))
+}
 
 
 # Using Lubridate to rename year column
