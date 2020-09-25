@@ -57,9 +57,17 @@ for (j in 1:M){
 
   month <- MR %>%
   group_by(YYYY) %>% 
-  summarize(mean(ATMP))
+  summarize(mean(ATMP), median(MM))
   colnames(month)[2]<-"AvgTMP"
+  colnames(month)[3] <- "MM"
   assign(month_files[j], month)
+  
+  if(j == 1){
+    frame <- month
+  }
+  else{
+    frame <- rbind.data.frame(frame, month)
+  }
 }
 
 ## Plotting ...
