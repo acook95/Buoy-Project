@@ -32,19 +32,24 @@ knitr::include_graphics(c('Buoy_44013.jpg','Buoy_location.jpg'))
 
 ## Approach
 
-While there are several different approaches one could take to look for evidence of global warming or climate change, we chose to focus on air temperature as our outcome variable of interest. We are interested in analyzing air temperature patterns to determine whether there is a significant upward trend over the course of several years. Specifically, we chose to analyze the average air temperature for each month from 2000 to 2018. Our primary analysis consisted of running a series of 12 linear regressions--one for each month--with average monthly air temperature as the outcome variable and the year as the predictor. We can confirm our findings on global warming by observing the coefficients of the predictor for each fitted regression model.
+While there are several different approaches one could take to look for evidence of global warming or climate change, we chose to focus on air temperature as our outcome variable of interest. We are interested in analyzing air temperature patterns to determine whether there is a significant upward trend over the course of several years. Specifically, we chose to analyze the average air temperature for each month from 2000 to 2018. Our primary analysis consisted of running a series of 12 linear regressions--one for each month--with average monthly air temperature as the outcome variable and the year as the predictor. We can confirm or deny evidence of global warming by observing the coefficients of the predictor for each fitted regression model. We then combined these twelve subsets into a single data frame, which was used to run a single linear regression in order to examine the slope of the regression line for each month over 18 years in a single plot.
 
 
 ## Code Organization
 
 The R code is organized into several chunks with comments for clarity. To start, the following R packages are loaded: tidyverse, stringr, rstanarm, lubridate, and gridExtra. Then, the code reads the meteorological data for a specified range of years from the NOAA website using a series of urls. This produces a separate data frame for each year in the specified range of 2000-2018. 
 
-The next goal is to create a single data frame containing the variables of interest for each of every year in the range. This is accomplished by creating a loop within a loop of code:
+The next goal is to tidy the data such that a single data frame is produced containing the variables of interest for each of every year in the range. This is accomplished by creating a loop within a loop of code:
 
 * The inner loop: Contains the columns that specified years, months, and air temperatures to create one smaller dataset. It then filters out the NAs[^1] which is uncollected data.
-* The outer loop: Creates a new variable for average temperature (AvgTMP) by taking the mean of the air temperature (ATMP) for every month of every year within the set.
 
-Finally, a loop was added to run a series of linear regressions to analyze the change in average temperatures over time. For each month across every year in the range, plots of the data points with regression lines are created using ggplot2. This was the final step once a tidy data frame was created with only the outcome and predictor variables.
+* The outer loop: Creates a new variable for average temperature (AvgTMP) by taking the mean of the air temperature (ATMP) for every month of every year within the set. 
+Next, a linear regression was run to analyze average temperature as a function of Date, for each month over our 18 year range. A plot was created displaying the data, regression line, and overall average temperature.
+
+Then, a loop was added to run a series of linear regressions to analyze the change in average temperatures over time. For each month across every year in the range, regression slopes are displayed in a table. Plots of the data points with regression lines are created using ggplot2, and combined into a single figure using grid.arrange().
+
+Finally, citations are created for each R package used in the above code.
+
 
 
 [^1]: In the data, there were values with “NA” that designated an unknown or untracked value. This is because NOAA has the occasional lack of funding which leaves empty spaces in their data. So, we had to ignore those data points in our research.
@@ -53,7 +58,10 @@ Finally, a loop was added to run a series of linear regressions to analyze the c
 
 ### Results
 
-By observing the coefficients of the predictor (year) for each fitted regression model, we were able to determine the general trend of the air temperature for each month over the course of 18 years. Plots of the data and regression lines for each month are shown in Figure 2. Slopes of each regression line are shown in Table 1. Overall, we observed a slight general rise in temperatures, with the average slope of the regression lines equal to 0.028. Only one month, March, showed a decrease in average temperatures over the course of our 18 year range. 
+By observing the coefficients of the predictor (Date) for the combined regression model, we are able to observe the change in average temperature over the course of 18 years. The plot and regression line for this model is shown in Figure 2. The slope of this regression line is 9.842 x 10^-5^. Over the course of our 18 year range, the average temperature increased by 0.68 degrees Celsius.
+
+For each of the twelve separate fitted regression models, by observing the coefficients of the predictor (Year), we were able to determine the general trend of the air temperature for each month, independent from the other months. Plots of the data and regression lines for each month are shown in Figure 3. Slopes of each regression line are shown in Table 1. The average slope of the regression lines is equal to 0.028. Only one month, March, showed a decrease in average temperatures over the course of our 18 year range.
+ 
  
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=6, fig.cap="Plot and regression line of average temperatures for each month from 2000 to 2018. The black solid line shows the variation in temperatures from month to month. The dashed line indicates overall average temperature. The blue solid line represents the regression equation. The linear regression line is positive, showing that there is a temperature increase. This temperature increase is 0.68 degrees Celsius."}
 
@@ -107,18 +115,17 @@ for (j in 1:M){
     mutate(Date=make_date(year=YYYY, month=MM, day=Day))
   
   if(j == 1){
-    frame <- month
+    M_all <- month
   }
   else{
-    frame <- rbind.data.frame(frame, month)
+    M_all <- rbind.data.frame(M_all, month)
   }
 }
 
-fit <- stan_glm(AvgTMP ~ Date, data = frame, refresh=0)
-cptn <- c(c("slope of regression line = ", round(coef(fit)[2],digits=3)))
-ggplot(frame, aes(Date, AvgTMP)) + 
+fit_all <- stan_glm(AvgTMP ~ Date, data = M_all, refresh=0)
+ggplot(M_all, aes(Date, AvgTMP)) + 
   geom_line() +
-  geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
+  geom_abline(intercept = coef(fit_all)[1], slope = coef(fit_all)[2], color = "blue") +
   geom_hline(aes(yintercept=mean(AvgTMP)), linetype="dotted")
 
 ```
@@ -126,8 +133,8 @@ ggplot(frame, aes(Date, AvgTMP)) +
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=6, fig.width=6, fig.cap="Plots of the linear regression line separated for each month from 2000 to 2018."}
 for (k in 1:12){
   file <- get(month_files[k])
-  fit <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
-  assign(slope_files[k], as_tibble(round(coef(fit)[2], digits = 3)))
+  fit_month <- stan_glm(AvgTMP ~ YYYY, data = file, refresh=0)
+  assign(slope_files[k], as_tibble(round(coef(fit_month)[2], digits = 3)))
   slopes <- get(slope_files[k])
   if(k==1){
     df <- slopes
@@ -137,7 +144,7 @@ for (k in 1:12){
   }
   assign(plot_files[k], ggplot(file, aes(YYYY, AvgTMP)) + 
            geom_point() + 
-           geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
+           geom_abline(intercept = coef(fit_month)[1], slope = coef(fit_month)[2], color = "blue") +
            labs(x = "Year", y = "Average Temp", title = month.abb[k]) + 
            xlim(2000, 2018) + 
            ylim(15, 30))
@@ -161,15 +168,18 @@ kable(df, col.names = NULL, caption = "Slopes of the regression lines for every 
 
 ### Discussion
 
-The results stated above suggest a general rise in temperatures off the coast of Boston between 2000 and 2018. The average slope of the regression lines is small, but we believe that even a small rise in temperatures can have significant environmental impact. While it is tempting to claim that this positive linear trend is evidence of global warming, there are limitations to consider.  
+The results stated above suggest a general rise in temperatures off the coast of Boston between 2000 and 2018. By combining these twelve subsets into a single dataframe, we are able to run a single regression and interpret the slope (see Figure 2). The positive slope is what indicates a rise in temperatures. In addition, the value of the average temperature increases by 0.68 degrees Celsius over the course of our range of dates. 
 
-First, we must be careful not to extrapolate when interpreting our results. Because our data was compiled from a single weather buoy, we can only draw conclusions about temperature trends at this geographic location. To make any claims about evidence of climate change on a global scale is beyond the scope of the analyses presented here.
+We further analyze this data by looking at regressions for each month separately. In examining each month separately (see Figure 3), we have taken twelve subsets of our data with which to observe trends in temperature. The average slope of these twelve regression lines is small, but we see that 11 out of 12 months have a positive slope. This suggests that our results are likely not due to random chance but instead due to a genuine change in temperature patterns. While it is tempting to claim that this positive linear trend is evidence of global warming (an increase in temperatures on a global scale), there are limitations to consider.
 
-Second, we have not analyzed any confidence intervals or significance levels for our regressions. Including p-values and/or confidence intervals intervals would give us a better idea of whether this observed rise in temperatures is a legitimate phenomenon or due to random chance. 
+First, we must be careful not to extrapolate when interpreting our results. Due to our data being compiled from a single weather buoy, we can only draw conclusions about temperature trends at this geographic location. It is beyond the scope of the analyses presented here to make any claims about evidence of climate change on a global scale. Second, we have not analyzed any confidence intervals or significance levels for our regressions. Including p-values and/or confidence intervals would give us a better idea of whether this observed rise in temperatures is a legitimate phenomenon with a significant effect size, and not simply due to random chance. Finally, we included a narrow range of years to analyze. Future analyses may seek to broaden this range in order to observe meteorological trends over a more extended period of time, perhaps dating back to the 1970s. 
 
-In addition to limitations, there are future analyses to consider. In examining each month separately, we have in essence taken twelve subsets of our data with which to observe trends in temperature. Another approach would be to combine these twelve subsets into a single data frame, which could then be used to run a single linear regression. Future analyses could include this model to explain temperature trends in a more cohesive manner.
+## Additional Notes
 
-Finally, we included a narrow range of years to analyze. Future analyses may seek to broaden this range in order to observe meteorological trends over a more extended period of time, perhaps dating back to the 1970s. 
+There were a few techniques that we strived to achieve but did not work in our time frame. First, we attempted to condense the twelve plots in the grid.arrange() function but we were not able to successfully run it in the allotted time. Instead, we simply listed all twelve plots (P01, P02, …, P12) in our grid.arrange() which printed exactly what we wanted. Lastly, we attempted to transpose our table of slopes for each month in one step, but we settled on using a multi-step process for the sake of time (violating rules of tidy data for the sake of readability). We resulted with the layout we liked, but if we had more time, we would have condensed five lines of code into one or two to have our code be more efficient.
+
+In addition to these ideas with time constraints, we had ideas about the layout of the report. We wanted to have a whole page dedicated to the twelve plots and the table but when we used /newpage, although it worked, there was a lot of blank space on the page before. So, we decided to split the figure of plots and the table to two separate pages. We also ran into a problem about having the figure and table on the same page as the table would always print on the next page. Again, with the time limit, we decided not to worry about it.
+
 
 \newpage
 
