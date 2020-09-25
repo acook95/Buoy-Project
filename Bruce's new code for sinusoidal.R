@@ -23,6 +23,10 @@ ggplot(frame, aes(Date, AvgTMP)) +
   geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
   geom_hline(aes(yintercept=mean(AvgTMP)), linetype="dotted")
 
-#Over the course of our sample, the xx regression line is showing an increase in average
+#Over the course of our sample, our computed linear regression line is showing an increase in average
 #temperature of 0.68 degrees.
 coef(fit)[2]*max(as.numeric(frame$Date)) - coef(fit)[2]*min(as.numeric(frame$Date))
+
+#Doing a standard linear regression, we 
+lm_reg<-lm(M01$AvgTMP~M01$Date)
+summary(lm_reg)
