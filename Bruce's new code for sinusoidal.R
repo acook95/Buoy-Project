@@ -23,9 +23,6 @@ ggplot(frame, aes(Date, AvgTMP)) +
   geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "blue") +
   geom_hline(aes(yintercept=mean(AvgTMP)), linetype="dotted")
 
-#Trying to calculate the rise in average monthly temperature from beginning
-#to end of our time frame based on the model.  BUT "Date" is in lubridate and we
-#weren't able to figure out how to do operations with the date in this format.
-coef(frame)[2]*max(frame$Date) - coef(frame[2]*min(frame$Date))
-
-
+#Over the course of our sample, the regression line is showing an increase in average
+#temperature of 0.68 degrees.
+coef(fit)[2]*max(as.numeric(frame$Date)) - coef(fit)[2]*min(as.numeric(frame$Date))
