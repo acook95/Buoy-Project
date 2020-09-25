@@ -12,9 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The National Oceanic and Atmospheric Administration (NOAA) studies the sky and the ocean to preserve our planet. Their mission is “to understand and predict changes in climate, weather, oceans, and coasts, to share that knowledge and information with others, and to conserve and manage coastal and marine ecosystems and resources.” NOAA’s vision of the future is to protect resilient and healthy ecosystems, communities, and economies in the face of change.
 
+
 ## Research Question
 
 The purpose of this project is to investigate evidence of global warming from weather buoy data. Meteorological data has been collected from [NOAA National Data Buoy Center Station 44013](https://www.ndbc.noaa.gov/station_history.php?station=44013), which is located about 11 miles offshore from Boston, MA. The specific question being asked is as follows: Can data from a single weather buoy provide evidence to support the conclusion that global warming is a real phenomenon?
+
+```{r echo=FALSE, out.width='30%', fig.align='center', fig.cap='Weather Buoy Station 44013', fig.show='hold'}
+knitr::include_graphics(c('Buoy_44013.jpg','Buoy_location.jpg'))
+```
+
 
 ## Approach
 
@@ -39,9 +45,9 @@ Finally, a loop was added to run a series of linear regressions to analyze the c
 
 ### Results
 
-By observing the coefficients of the predictor for each fitted regression model, we were able to determine the general trend of the air temperature for each month over the course of 18 years. Plots of the data and regression lines for each month are shown below. Overall, we observed a slight general rise in temperatures, with the average slope of the regression line equal to 0.028. 
+By observing the coefficients of the predictor (year) for each fitted regression model, we were able to determine the general trend of the air temperature for each month over the course of 18 years. Plots of the data and regression lines for each month are shown in Figure 2. Slopes of each regression line are shown in Table 1. Overall, we observed a slight general rise in temperatures, with the average slope of the regression lines equal to 0.028. Only one month, March, showed a decrease in average temperatures over the course of our 18 year range. 
  
- 
+\newpage
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.height=6, fig.width=6, fig.cap="Plots of the linear regression line for each month from 2000 to 2018."}
 library(tidyverse)
 library(stringr)
@@ -133,9 +139,37 @@ kable(df, col.names = NULL, caption = "Slopes of the regression lines for every 
 ```
 
 \newpage
-
 ### Discussion
 
-Insert text here about limitations, other analyses, etc. 
+The results stated above suggest a general rise in temperatures off the coast of Boston between 2000 and 2018. The average slope of the regression lines is small, but we believe that even a small rise in temperatures can have significant environmental impact. While it is tempting to claim that this positive linear trend is evidence of global warming, there are limitations to consider.  
+
+First, we must be careful not to extrapolate when interpreting our results. Because our data was compiled from a single weather buoy, we can only draw conclusions about temperature trends at this geographic location. To make any claims about evidence of climate change on a global scale is beyond the scope of the analyses presented here.
+
+Second, we have not analyzed any confidence intervals or significance levels for our regressions. Including p-values and/or confidence intervals intervals would give us a better idea of whether this observed rise in temperatures is a legitimate phenomenon or due to random chance. 
+
+In addition to limitations, there are future analyses to consider. In examining each month separately, we have in essence taken twelve subsets of our data with which to observe trends in temperature. Another approach would be to combine these twelve subsets into a single data frame, which could then be used to run a single linear regression. Future analyses could include this model to explain temperature trends in a more cohesive manner.
+
+Finally, we included a narrow range of years to analyze. Future analyses may seek to broaden this range in order to observe meteorological trends over a more extended period of time, perhaps dating back to the 1970s. 
+
+\newpage
+
+## References
+
+1. Baptiste Auguie (2017). gridExtra: Miscellaneous Functions for "Grid" Graphics. R package version 2.3. https://CRAN.R-project.org/package=gridExtra
+
+2. Garrett Grolemund, Hadley Wickham (2011). Dates and Times Made Easy with lubridate. Journal of Statistical Software, 40(3), 1-25. URL http://www.jstatsoft.org/v40/i03/.
+
+3. Goodrich B, Gabry J, Ali I & Brilleman S. (2020). rstanarm: Bayesian applied regression modeling via Stan. R package version 2.21.1 https://mc-stan.org/rstanarm.
+
+4. Hadley Wickham (2019). stringr: Simple, Consistent Wrappers for Common String Operations. R package version 1.4.0. https://CRAN.R-project.org/package=stringr
+
+5. Hao Zhu (2020). kableExtra: Construct Complex Table with 'kable' and Pipe Syntax. R package version 1.2.1. https://CRAN.R-project.org/package=kableExtra
+
+6. US Department of Commerce, National Oceanic and Atmospheric Administration. “NDBC Station History Page.” NDBC, 8 Nov. 1996, www.ndbc.noaa.gov/station_history.php?station=44013. 
+
+7. Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+
+
 
 
