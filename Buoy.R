@@ -69,15 +69,12 @@ for (j in 1:M){
   
   assign(month_files[j], month)
   
-<<<<<<< HEAD
   ## Use lubridate to create a new column that puts together the year, month, and day
   month <- month %>% mutate(Day=c(1)) %>% 
     mutate(Date=make_date(year=YYYY, month=MM, day=Day))
   
   ##bind together the "month" files to create a new data frame ("M_all") which i
-=======
-  
->>>>>>> 4fde9895887dffd3e02866371c02ebc1c7489af5
+
   if(j == 1){
     M_all <- month
   }
